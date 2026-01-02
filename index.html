@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Allergy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        allergyRed: '#d7232e',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .menu-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .menu-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #df4363;
+            transition: width 0.3s ease;
+        }
+        .menu-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Sine Wave Animation */
+        @keyframes wave-animation {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -20; }
+        }
+        
+        .squiggle-cross {
+            stroke-dasharray: 1000;
+            transition: stroke-width 0.3s ease;
+        }
+        
+        .logo-container:hover .squiggle-cross {
+            /* Active wave movement on hover */
+            animation: wave-animation 1s linear infinite;
+        }
+
+        .prohibition-ring {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Remove hover scale from cross as requested */
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center p-8 md:p-20">
+    
+    <header class="w-full max-w-5xl flex flex-col md:flex-row items-center md:items-start justify-between gap-12">
+        <!-- Logo Area -->
+        <div class="logo-container flex flex-col items-center md:items-start group cursor-crosshair">
+            <div class="relative w-72 h-72 mb-8">
+                <!-- Painting Image Frame (Smaller inside the cross) -->
+                <div class="absolute inset-0 flex items-center justify-center p-16">
+                    <img src="img/painting.png" alt="Art Allergy Registry Frame" class="w-full h-full object-contain drop-shadow-lg scale-150">
+                </div>
+                <!-- Red Prohibition Overlay (Large Cross) -->
+                <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full text-allergyRed fill-none overflow-visible">
+                    <!-- Thick Outer Ring -->
+                    <circle cx="50" cy="50" r="57" class="prohibition-ring stroke-current stroke-[12] drop-shadow-md" />
+                </svg>
+                <canvas id="hero-canvas" class="absolute inset-0 w-full h-full pointer-events-auto"></canvas>
+            </div>
+            <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
+            <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Authentication & Licensing</p>
+        </div>
+
+        <!-- Navigation Menu (Banksy Style) -->
+        <nav class="md:text-right">
+            <ul class="font-serif text-2xl space-y-4 md:space-y-6">
+                <li><a href="index.html" class="menu-link text-allergyRed">Home</a></li>
+                <li><a href="legal.html" class="menu-link hover:italic">Legal Affairs</a></li>
+                <li><span class="opacity-20 cursor-not-allowed italic">Art Registry</span></li>
+                <li><span class="opacity-20 cursor-not-allowed italic">Authentication</span></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="w-full max-w-2xl mt-24 md:mt-40 space-y-12 text-center md:text-left">
+        <div class="space-y-8">
+            <h2 class="font-serif text-4xl md:text-5xl leading-tight">
+                This office is the <span class="italic underline decoration-allergyRed underline-offset-8">exclusive licensor</span> for the works of the artist <span class="font-bold">Wallno</span>.
+            </h2>
+            <p class="font-sans text-lg font-light leading-relaxed text-gray-600 max-w-xl">
+                Any unauthorized commercial use, reproduction, or distribution of Wallno's imagery is subject to legal enforcement. Art Allergy serves as the legal guardian and registry for all authentic Wallno productions.
+            </p>
+        </div>
+
+        <div class="pt-12 border-t border-gray-100">
+            <p class="font-sans text-xs uppercase tracking-[0.2em] text-gray-400">
+                Please refer to the <a href="legal.html" class="text-black hover:text-allergyRed underline underline-offset-4">Legal Affairs</a> section for copyright inquiries.
+            </p>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-20 w-full max-w-5xl flex justify-between items-end font-sans text-[9px] uppercase tracking-[0.3em] opacity-30">
+        <div>Art Allergy &copy; 2025</div>
+        <div class="text-right">Official Licensee for Wallno</div>
+    </footer>
+
+    <script>
+        (function() {
+            // Wait for Matter.js to load
+            if (typeof Matter === 'undefined') {
+                console.error('Matter.js not loaded');
+                return;
+            }
+
+            const Engine = Matter.Engine,
+                  Runner = Matter.Runner,
+                  Bodies = Matter.Bodies,
+                  Body = Matter.Body,
+                  Constraint = Matter.Constraint,
+                  Composite = Matter.Composite,
+                  Vector = Matter.Vector,
+                  World = Matter.World;
+
+            const canvas = document.getElementById('hero-canvas');
+            const parent = canvas.parentElement;
+
+            // Create engine
+            const engine = Engine.create();
+            const world = engine.world;
+            
+            // Disable gravity
+            engine.gravity.y = 0;
+            engine.gravity.x = 0;
+
+            // Configuration
+            const SEGMENTS = 30;
+            
+            // Create runner
+            const runner = Runner.create();
+            
+            // Physics bodies storage
+            let stringBodies = [];
+            
+            // State
+            let width, height, scale;
+            let lastMouseX = 0, lastMouseY = 0;
+
+            function init() {
+                resize();
+                Runner.run(runner, engine);
+                requestAnimationFrame(render);
+            }
+
+            function createString() {
+                Composite.clear(world);
+                stringBodies = [];
+                
+                // Define diagonal line coordinates (top-left to bottom-right)
+                // Extended to reach the outer circle (approx 9% to 91%)
+                const startX = width * 0.09;
+                const startY = height * 0.09;
+                const endX = width * 0.91;
+                const endY = height * 0.91;
+                
+                const dx = (endX - startX) / (SEGMENTS - 1);
+                const dy = (endY - startY) / (SEGMENTS - 1);
+                
+                let prevBody = null;
+                
+                for (let i = 0; i < SEGMENTS; i++) {
+                    const isStatic = i === 0 || i === SEGMENTS - 1;
+                    const x = startX + i * dx;
+                    const y = startY + i * dy;
+                    
+                    const body = Bodies.circle(x, y, 5, { 
+                        isStatic: isStatic,
+                        frictionAir: 0.05,
+                        density: 0.1,
+                        restitution: 0.9,
+                        collisionFilter: { group: -1 } 
+                    });
+                    
+                    stringBodies.push(body);
+                    World.add(world, body);
+                    
+                    if (prevBody) {
+                        const constraint = Constraint.create({
+                            bodyA: prevBody,
+                            bodyB: body,
+                            stiffness: 0.5,
+                            damping: 0.1,
+                            length: Vector.magnitude(Vector.sub(prevBody.position, body.position)),
+                            render: { visible: false }
+                        });
+                        World.add(world, constraint);
+                    }
+                    
+                    prevBody = body;
+                }
+            }
+
+            function resize() {
+                const rect = parent.getBoundingClientRect();
+                width = rect.width;
+                height = rect.height;
+                
+                // Handle high DPI displays
+                scale = window.devicePixelRatio || 1;
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                
+                // Re-create string to match new dimensions
+                createString();
+            }
+
+            function render() {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Set scale for drawing
+                ctx.save();
+                ctx.scale(scale, scale);
+                
+                if (stringBodies.length > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(stringBodies[0].position.x, stringBodies[0].position.y);
+                    
+                    // Smooth curve through points
+                    for (let i = 1; i < stringBodies.length - 2; i++) {
+                        const xc = (stringBodies[i].position.x + stringBodies[i+1].position.x) / 2;
+                        const yc = (stringBodies[i].position.y + stringBodies[i+1].position.y) / 2;
+                        ctx.quadraticCurveTo(stringBodies[i].position.x, stringBodies[i].position.y, xc, yc);
+                    }
+                    
+                    // Last segments
+                    if (stringBodies.length > 2) {
+                        const i = stringBodies.length - 2;
+                        ctx.quadraticCurveTo(
+                            stringBodies[i].position.x, 
+                            stringBodies[i].position.y, 
+                            stringBodies[i+1].position.x, 
+                            stringBodies[i+1].position.y
+                        );
+                    }
+
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.strokeStyle = '#d7232e'; // allergyRed
+                    ctx.lineWidth = 24;
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+                requestAnimationFrame(render);
+            }
+
+            // Mouse Interaction
+            document.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const currentMouseX = e.clientX - rect.left;
+                const currentMouseY = e.clientY - rect.top;
+                
+                // Calculate velocity
+                const mouseVelX = currentMouseX - lastMouseX;
+                const mouseVelY = currentMouseY - lastMouseY;
+                const speed = Math.sqrt(mouseVelX * mouseVelX + mouseVelY * mouseVelY);
+                
+                lastMouseX = currentMouseX;
+                lastMouseY = currentMouseY;
+                
+                // Only interact if moving fast enough and within canvas bounds
+                if (speed > 2 && 
+                    currentMouseX >= 0 && currentMouseX <= width &&
+                    currentMouseY >= 0 && currentMouseY <= height) {
+                    
+                    const mousePos = { x: currentMouseX, y: currentMouseY };
+                    
+                    for (let body of stringBodies) {
+                        if (body.isStatic) continue;
+                        
+                        const dist = Vector.magnitude(Vector.sub(mousePos, body.position));
+                        
+                        // Interaction radius
+                        if (dist < 40) {
+                            const forceMagnitude = 0.002 * speed;
+                            // Limit max force
+                            const clampedForce = Math.min(forceMagnitude, 0.1);
+                            
+                            const force = Vector.mult(
+                                Vector.normalise({ x: mouseVelX, y: mouseVelY }), 
+                                clampedForce
+                            );
+                            
+                            Body.applyForce(body, body.position, force);
+                        }
+                    }
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                // Debounce resize
+                clearTimeout(window.resizeTimer);
+                window.resizeTimer = setTimeout(resize, 250);
+            });
+
+            // Start
+            init();
+        })();
+    </script>
+</body>
+</html>

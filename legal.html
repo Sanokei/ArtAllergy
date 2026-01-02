@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Affairs - Art Allergy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        allergyRed: '#C53030',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #ffffff; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
+        .legal-content h2 { margin-top: 3rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.5rem; }
+        .legal-content p { margin-top: 1.5rem; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen p-8 md:p-20">
+    
+    <header class="w-full max-w-5xl flex flex-col md:flex-row items-center md:items-start justify-between gap-12 border-b border-gray-100 pb-12">
+        <div class="flex flex-col items-center md:items-start group">
+            <h1 class="font-serif text-5xl italic tracking-tight"><a href="index.html" class="hover:text-allergyRed transition-colors">Art Allergy</a></h1>
+            <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Legal Affairs Department</p>
+        </div>
+
+        <nav class="md:text-right">
+            <ul class="font-serif text-2xl space-y-4">
+                <li><a href="index.html" class="hover:italic hover:text-allergyRed transition-all">Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="w-full max-w-3xl mt-16 md:mt-24 mb-32">
+        <h2 class="font-serif text-4xl italic mb-12">Terms, Licensing & Privacy</h2>
+        
+        <div class="legal-content font-sans text-sm leading-relaxed text-gray-700 space-y-8">
+            <section>
+                <h2 class="font-serif text-2xl italic text-black">1. Exclusive Licensing Rights</h2>
+                <p>
+                    Art Allergy (the "Licensor") holds the absolute and exclusive worldwide licensing rights for the visual artist known as <strong>Wallno</strong>. This exclusivity encompasses all mediums, including but not limited to physical artwork, digital reproductions, and commercial merchandise. 
+                </p>
+                <p>
+                    Any use of Wallno's intellectual property without an executed license agreement from this office constitutes a violation of international copyright law.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="font-serif text-2xl italic text-black">2. Copyright Protection</h2>
+                <p>
+                    All content on this website, including text, graphics, and the "Art Allergy" emblem, is protected by copyright. The "Golden Frame Prohibition" logo is a registered trademark of Art Allergy. Unauthorized reproduction will be met with legal action and existential disappointment.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="font-serif text-2xl italic text-black">3. Privacy Policy</h2>
+                <p>
+                    We respect your privacy. Art Allergy does not deploy tracking cookies, third-party analytics, or data-mining algorithms. We collect zero personal data from visitors. Any information provided through official correspondence is used strictly for authentication purposes and is never shared or sold.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="font-serif text-2xl italic text-black">4. Authentication Policy</h2>
+                <p>
+                    Authentication requests for works attributed to Wallno must be submitted via the official registry. Certificates of Authenticity issued by third-party services or independent "experts" are not recognized by the artist or this office.
+                </p>
+            </section>
+        </div>
+
+        <div class="mt-20 pt-12 border-t border-gray-100">
+            <p class="font-serif text-2xl italic">
+                Protecting art from its own popularity.
+            </p>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-12 w-full max-w-5xl border-t border-gray-100 flex justify-between items-end font-sans text-[9px] uppercase tracking-[0.3em] opacity-30">
+        <div>Art Allergy &copy; 2025</div>
+        <div>Legal Affairs Office</div>
+    </footer>
+
+</body>
+</html>
