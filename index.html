@@ -34,7 +34,6 @@
 
     <!-- Styles & Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -106,9 +105,9 @@
         <!-- Logo Area -->
         <div class="logo-container flex flex-col items-center md:items-start group cursor-crosshair">
             <div class="relative w-72 h-72 mb-8">
-                <!-- Zine Hero Image (Inside the cross) -->
+                <!-- Painting Hero Image (Inside the cross) -->
                 <div class="absolute inset-0 flex items-center justify-center p-12">
-                    <img src="img/zine_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
+                    <img src="img/painting_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
                 </div>
                 <!-- Red Prohibition Overlay (Large Cross) -->
                 <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full text-allergyRed fill-none overflow-visible">
@@ -410,324 +409,97 @@
 
     <script>
         (function() {
-            // Wait for Matter.js to load
-            if (typeof Matter === 'undefined') {
-                console.error('Matter.js not loaded');
-                return;
-            }
-
-            const Engine = Matter.Engine,
-                  Runner = Matter.Runner,
-                  Bodies = Matter.Bodies,
-                  Body = Matter.Body,
-                  Constraint = Matter.Constraint,
-                  Composite = Matter.Composite,
-                  Vector = Matter.Vector,
-                  World = Matter.World;
-
             const canvas = document.getElementById('hero-canvas');
             const parent = canvas.parentElement;
+            const ctx = canvas.getContext('2d');
 
-            // Create engine
-            const engine = Engine.create();
-            const world = engine.world;
-            
-            // Disable gravity
-            engine.gravity.y = 0;
-            engine.gravity.x = 0;
-
-            // Configuration
-            const SEGMENTS = 30;
-            
-            // Create runner
-            const runner = Runner.create();
-            
-            // Physics bodies storage
-            let stringBodies = [];
-            
-            // State
             let width, height, scale;
-            let lastMouseX = 0, lastMouseY = 0;
+            let canvasImg = null;        // painting_canvasonly.png loaded as Image
+            let currentColor = '#d7232e'; // default allergyRed
+            let isDrawing = false;
+            let lastX = 0, lastY = 0;
+            const BRUSH_SIZE = 12;
 
-            function init() {
-                resize();
-                Runner.run(runner, engine);
-                requestAnimationFrame(render);
+            // —— Random color on enter ——————————————————————————————————————
+            function randomColor() {
+                const hue = Math.floor(Math.random() * 360);
+                const sat = 60 + Math.floor(Math.random() * 30); // 60-90%
+                const lit = 45 + Math.floor(Math.random() * 20); // 45-65%
+                return `hsl(${hue}, ${sat}%, ${lit}%)`;
             }
 
-            function createString() {
-                Composite.clear(world);
-                stringBodies = [];
-                
-                // Define diagonal line coordinates (top-left to bottom-right)
-                // Extended to reach the outer circle (approx 9% to 91%)
-                const startX = width * 0.09;
-                const startY = height * 0.09;
-                const endX = width * 0.91;
-                const endY = height * 0.91;
-                
-                const dx = (endX - startX) / (SEGMENTS - 1);
-                const dy = (endY - startY) / (SEGMENTS - 1);
-                
-                let prevBody = null;
-                
-                for (let i = 0; i < SEGMENTS; i++) {
-                    const isStatic = i === 0 || i === SEGMENTS - 1;
-                    const x = startX + i * dx;
-                    const y = startY + i * dy;
-                    
-                    const body = Bodies.circle(x, y, 5, { 
-                        isStatic: isStatic,
-                        frictionAir: 0.05,
-                        density: 0.1,
-                        restitution: 0.9,
-                        collisionFilter: { group: -1 } 
-                    });
-                    
-                    stringBodies.push(body);
-                    World.add(world, body);
-                    
-                    if (prevBody) {
-                        const constraint = Constraint.create({
-                            bodyA: prevBody,
-                            bodyB: body,
-                            stiffness: 0.5,
-                            damping: 0.1,
-                            length: Vector.magnitude(Vector.sub(prevBody.position, body.position)),
-                            render: { visible: false }
-                        });
-                        World.add(world, constraint);
-                    }
-                    
-                    prevBody = body;
-                }
-            }
+            // —— Load the canvas-only painting image —————————————————————————
+            canvasImg = new Image();
+            canvasImg.src = 'img/painting_canvasonly.png';
+            canvasImg.onload = () => resize();
 
+            // —— Resize: match parent, handle DPI, redraw background —————————
             function resize() {
                 const rect = parent.getBoundingClientRect();
                 width = rect.width;
                 height = rect.height;
-                
-                // Handle high DPI displays
                 scale = window.devicePixelRatio || 1;
                 canvas.width = width * scale;
                 canvas.height = height * scale;
-                
-                // Re-create string to match new dimensions
-                createString();
-            }
-
-            let lastRenderTime = performance.now();
-            function render() {
-                const now = performance.now();
-                const dt = now - lastRenderTime;
-                lastRenderTime = now;
-
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Set scale for drawing
-                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
                 ctx.scale(scale, scale);
-
-                if (stringBodies.length > 0) {
-                    ctx.beginPath();
-                    ctx.moveTo(stringBodies[0].position.x, stringBodies[0].position.y);
-
-                    // Smooth curve through points
-                    for (let i = 1; i < stringBodies.length - 2; i++) {
-                        const xc = (stringBodies[i].position.x + stringBodies[i+1].position.x) / 2;
-                        const yc = (stringBodies[i].position.y + stringBodies[i+1].position.y) / 2;
-                        ctx.quadraticCurveTo(stringBodies[i].position.x, stringBodies[i].position.y, xc, yc);
-                    }
-
-                    // Last segments
-                    if (stringBodies.length > 2) {
-                        const i = stringBodies.length - 2;
-                        ctx.quadraticCurveTo(
-                            stringBodies[i].position.x,
-                            stringBodies[i].position.y,
-                            stringBodies[i+1].position.x,
-                            stringBodies[i+1].position.y
-                        );
-                    }
-
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.strokeStyle = '#d7232e'; // allergyRed
-                    ctx.lineWidth = 24;
-                    ctx.stroke();
-                }
-
-                // Check for plucks each frame
-                checkPlucks();
-                updateFlashes(dt);
-                drawFlashes(ctx);
-
-                ctx.restore();
-                requestAnimationFrame(render);
+                drawBackground();
             }
 
-            // Mouse Interaction
-            document.addEventListener('mousemove', function(e) {
-                // Lazy-init audio on first user interaction (browser autoplay policy)
-                ensureAudio();
-                const rect = canvas.getBoundingClientRect();
-                const currentMouseX = e.clientX - rect.left;
-                const currentMouseY = e.clientY - rect.top;
-                
-                // Calculate velocity
-                const mouseVelX = currentMouseX - lastMouseX;
-                const mouseVelY = currentMouseY - lastMouseY;
-                const speed = Math.sqrt(mouseVelX * mouseVelX + mouseVelY * mouseVelY);
-                
-                lastMouseX = currentMouseX;
-                lastMouseY = currentMouseY;
-                
-                // Only interact if moving fast enough and within canvas bounds
-                if (speed > 2 && 
-                    currentMouseX >= 0 && currentMouseX <= width &&
-                    currentMouseY >= 0 && currentMouseY <= height) {
-                    
-                    const mousePos = { x: currentMouseX, y: currentMouseY };
-                    
-                    for (let body of stringBodies) {
-                        if (body.isStatic) continue;
-                        
-                        const dist = Vector.magnitude(Vector.sub(mousePos, body.position));
-                        
-                        // Interaction radius
-                        if (dist < 40) {
-                            const forceMagnitude = 0.002 * speed;
-                            // Limit max force
-                            const clampedForce = Math.min(forceMagnitude, 0.1);
-                            
-                            const force = Vector.mult(
-                                Vector.normalise({ x: mouseVelX, y: mouseVelY }), 
-                                clampedForce
-                            );
-                            
-                            Body.applyForce(body, body.position, force);
-                        }
-                    }
-                }
+            // —— Draw the canvas-only image as the background ————————————————
+            function drawBackground() {
+                if (!canvasImg || !canvasImg.complete) return;
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(canvasImg, 0, 0, width, height);
+            }
+
+            // —— Draw a dot at the given coordinate ——————————————————————————
+            function drawDot(x, y) {
+                ctx.beginPath();
+                ctx.arc(x, y, BRUSH_SIZE / 2, 0, Math.PI * 2);
+                ctx.fillStyle = currentColor;
+                ctx.fill();
+                // Slightly larger, more transparent halo
+                ctx.beginPath();
+                ctx.arc(x, y, BRUSH_SIZE, 0, Math.PI * 2);
+                ctx.fillStyle = currentColor.replace(')', ', 0.25)').replace('hsl', 'hsla');
+                ctx.fill();
+            }
+
+            // —— Mouse enters canvas → new random color —————————————————————
+            canvas.addEventListener('mouseenter', () => {
+                currentColor = randomColor();
+                isDrawing = true;
             });
 
-            // --- Audio: musical notes on string pluck ---
-            let audioCtx = null;
-            let activeVoices = 0;
-            const MAX_VOICES = 8;
-            const bodyCooldowns = new Array(SEGMENTS).fill(0);
-            const COOLDOWN_MS = 100;
-            const SPEED_THRESHOLD = 2;
-            // C major pentatonic across 3 octaves: C4 D4 E4 G4 A4 C5 D5 E5 G5 A5 C6 D6 E6 G6 A6
-            const pentatonic = [
-                261.63, 293.66, 329.63, 392.00, 440.00,  // C4 D4 E4 G4 A4
-                523.25, 587.33, 659.25, 783.99, 880.00,  // C5 D5 E5 G5 A5
-                1046.50, 1174.66, 1318.51, 1567.98, 1760.00 // C6 D6 E6 G6 A6
-            ];
+            // —— Mouse leaves → stop drawing ————————————————————————————————
+            canvas.addEventListener('mouseleave', () => {
+                isDrawing = false;
+            });
 
-            function ensureAudio() {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-            }
+            // —— Draw on hover ——————————————————————————————————————————————
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-            function playPluck(bodyIndex, speed) {
-                if (activeVoices >= MAX_VOICES) return;
-                const now = performance.now();
-                if (now - bodyCooldowns[bodyIndex] < COOLDOWN_MS) return;
-                bodyCooldowns[bodyIndex] = now;
+                // Skip if too close to last point (avoid stacking when idle)
+                const dist = Math.hypot(x - lastX, y - lastY);
+                if (dist < BRUSH_SIZE * 0.4) return;
 
-                ensureAudio();
-                if (!audioCtx) return;
-
-                // Map body index (1..SEGMENTS-2) to pentatonic note
-                const noteIndex = (bodyIndex - 1) % pentatonic.length;
-                const freq = pentatonic[noteIndex];
-
-                // Volume from speed, clamped
-                const gain = Math.min(Math.max(speed * 0.025, 0.02), 0.25);
-
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-
-                activeVoices++;
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
-                osc.onended = () => { activeVoices--; };
-            }
-
-            // Track previous velocities per body to detect disturbance
-            const prevSpeeds = new Float32Array(SEGMENTS);
-            function checkPlucks() {
-                for (let i = 1; i < SEGMENTS - 1; i++) {
-                    const body = stringBodies[i];
-                    const speed = body.speed;
-                    // Detect when speed crosses threshold (rising edge)
-                    if (speed > SPEED_THRESHOLD && prevSpeeds[i] <= SPEED_THRESHOLD) {
-                        playPluck(i, speed);
-                    }
-                    prevSpeeds[i] = speed;
-                }
-            }
-
-            // --- Visual: subtle ring flash on pluck ---
-            // Pluck points are recorded by playPluck and drawn in render
-            let pluckFlashes = []; // { x, y, age }
-            const FLASH_DURATION = 300; // ms
-
-            function addPluckFlash(x, y) {
-                pluckFlashes.push({ x, y, age: 0 });
-            }
-
-            function updateFlashes(dt) {
-                for (let f of pluckFlashes) {
-                    f.age += dt;
-                }
-                pluckFlashes = pluckFlashes.filter(f => f.age < FLASH_DURATION);
-            }
-
-            function drawFlashes(ctx) {
-                for (let f of pluckFlashes) {
-                    const progress = f.age / FLASH_DURATION;
-                    const alpha = 1 - progress;
-                    const radius = 5 + progress * 20;
-                    ctx.beginPath();
-                    ctx.arc(f.x, f.y, radius, 0, Math.PI * 2);
-                    ctx.strokeStyle = `rgba(255, 255, 200, ${alpha})`;
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            }
-
-            // Modify playPluck to also record flash
-            const _playPluck = playPluck;
-            playPluck = function(bodyIndex, speed) {
-                _playPluck(bodyIndex, speed);
-                if (stringBodies[bodyIndex]) {
-                    addPluckFlash(stringBodies[bodyIndex].position.x, stringBodies[bodyIndex].position.y);
-                }
-            };
+                lastX = x;
+                lastY = y;
+                drawDot(x, y);
+            });
 
             window.addEventListener('resize', () => {
-                // Debounce resize
                 clearTimeout(window.resizeTimer);
                 window.resizeTimer = setTimeout(resize, 250);
             });
 
-            // Start
-            init();
+            // Initial setup
+            resize();
         })();
     </script>
 </body>
