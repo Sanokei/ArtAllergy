@@ -3,8 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art Allergy</title>
+    <title>Art Allergy | Independent Publishing House (NY &amp; London)</title>
+    
+    <!-- SEO & General Metadata -->
+    <meta name="description" content="Art Allergy is an independent publishing house for underground writers, poets, and zine creators from New York and London. We publish raw, experimental, and authentic works.">
+    <meta name="keywords" content="indie publishing, publishing house, zines, new york writers, london writers, independent literature, experimental prose, poetry, art allergy">
+    <link rel="canonical" href="https://artallergy.org/">
     <link rel="icon" href="img/icon.png" type="image/png">
+
+    <!-- Open Graph / Discord / Slack / Signal / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://artallergy.org/">
+    <meta property="og:title" content="Art Allergy | Independent Publishing House (NY &amp; London)">
+    <meta property="og:description" content="We have an allergy to the sanitized, the corporate, and the mass-produced. Publishing raw, experimental prints, zines, and prose from the underground scenes of New York and London.">
+    <meta property="og:image" content="https://artallergy.org/img/og_image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:site_name" content="Art Allergy">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://artallergy.org/">
+    <meta name="twitter:title" content="Art Allergy | Independent Publishing House (NY &amp; London)">
+    <meta name="twitter:description" content="We have an allergy to the sanitized, the corporate, and the mass-produced. Publishing raw, experimental prints, zines, and prose from the underground scenes of New York and London.">
+    <meta name="twitter:image" content="https://artallergy.org/img/og_image.png">
+
+    <!-- Theme Color for Slack/Discord & Browsers -->
+    <meta name="theme-color" content="#d7232e">
+
+    <!-- Styles & Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,9 +106,9 @@
         <!-- Logo Area -->
         <div class="logo-container flex flex-col items-center md:items-start group cursor-crosshair">
             <div class="relative w-72 h-72 mb-8">
-                <!-- Painting Image Frame (Smaller inside the cross) -->
-                <div class="absolute inset-0 flex items-center justify-center p-16">
-                    <img src="img/painting.png" alt="Art Allergy Registry Frame" class="w-full h-full object-contain drop-shadow-lg scale-150">
+                <!-- Zine Hero Image (Inside the cross) -->
+                <div class="absolute inset-0 flex items-center justify-center p-12">
+                    <img src="img/zine_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
                 </div>
                 <!-- Red Prohibition Overlay (Large Cross) -->
                 <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full text-allergyRed fill-none overflow-visible">
@@ -90,41 +118,218 @@
                 <canvas id="hero-canvas" class="absolute inset-0 w-full h-full pointer-events-auto"></canvas>
             </div>
             <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
-            <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Authentication & Licensing</p>
+            <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Independent Publishing House</p>
         </div>
 
-        <!-- Navigation Menu (Banksy Style) -->
+        <!-- Navigation Menu -->
         <nav class="md:text-right">
             <ul class="font-serif text-2xl space-y-4 md:space-y-6">
                 <li><a href="index.html" class="menu-link text-allergyRed">Home</a></li>
-                <li><a href="legal.html" class="menu-link hover:italic">Legal Affairs</a></li>
-                <li><span class="opacity-20 cursor-not-allowed italic">Art Registry</span></li>
-                <li><span class="opacity-20 cursor-not-allowed italic">Authentication</span></li>
+                <li><a href="#manifesto" class="menu-link hover:italic">Manifesto</a></li>
+                <li><a href="#catalog" class="menu-link hover:italic">Catalog</a></li>
+                <li><a href="#submissions" class="menu-link hover:italic">Submissions</a></li>
+                <li><a href="legal.html" class="menu-link hover:italic">Legal &amp; Rights</a></li>
             </ul>
         </nav>
     </header>
 
-    <main class="w-full max-w-2xl mt-24 md:mt-40 space-y-12 text-center md:text-left">
-        <div class="space-y-8">
+    <main class="w-full max-w-5xl mt-24 md:mt-40 space-y-24">
+        <!-- Hero Intro -->
+        <div class="space-y-8 max-w-2xl text-center md:text-left">
             <h2 class="font-serif text-4xl md:text-5xl leading-tight">
-                This office is the <span class="italic underline decoration-allergyRed underline-offset-8">exclusive licensor</span> for the works of the artist <span class="font-bold">Wallno</span>.
+                A publishing house for the <span class="italic underline decoration-allergyRed underline-offset-8">allergic</span>.
             </h2>
-            <p class="font-sans text-lg font-light leading-relaxed text-gray-600 max-w-xl">
-                Any unauthorized commercial use, reproduction, or distribution of Wallno's imagery is subject to legal enforcement. Art Allergy serves as the legal guardian and registry for all authentic Wallno productions.
+            <p class="font-sans text-lg font-light leading-relaxed text-gray-600">
+                We represent independent creators, writers, poets, and zine makers from the underground scenes of New York and London. We believe in raw, physical prints and counter-cultural voices.
             </p>
         </div>
 
-        <div class="pt-12 border-t border-gray-100">
-            <p class="font-sans text-xs uppercase tracking-[0.2em] text-gray-400">
-                Please refer to the <a href="legal.html" class="text-black hover:text-allergyRed underline underline-offset-4">Legal Affairs</a> section for copyright inquiries.
-            </p>
-        </div>
+        <!-- Manifesto -->
+        <section id="manifesto" class="pt-20 border-t border-gray-100 space-y-8 scroll-mt-12">
+            <p class="font-sans text-[10px] uppercase tracking-[0.3em] text-allergyRed font-semibold">Our Philosophy</p>
+            <h3 class="font-serif text-4xl italic">The Manifesto</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 font-sans text-base text-gray-600 leading-relaxed">
+                <p>
+                    We have a profound allergy to the sanitized, the corporate, and the algorithmically optimized. Modern publishing has become an industry of risk aversion, transforming raw human expression into predictable commodities. We reject the focus groups, the content filters, and the digital gates that keep underground voices on the margins.
+                </p>
+                <p>
+                    Art Allergy was born in the drafty lofts of Brooklyn and the damp brick arches of East London. We publish visual literature, experimental prose, street photography, and DIY zines. Our editions are printed in small, numbered runs—tangible, permanent, and unapologetically flawed.
+                </p>
+            </div>
+        </section>
+
+        <!-- Catalog -->
+        <section id="catalog" class="pt-24 border-t border-gray-100 space-y-12 scroll-mt-12">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <p class="font-sans text-[10px] uppercase tracking-[0.3em] text-allergyRed font-semibold mb-2">Selected Releases</p>
+                    <h3 class="font-serif text-4xl italic">Featured Catalog</h3>
+                </div>
+                <p class="font-sans text-sm text-gray-400 max-w-xs md:text-right">Available in limited print runs at select independent booksellers in NY &amp; London.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+                <!-- Work 1 -->
+                <div class="group flex flex-col space-y-4">
+                    <div class="relative overflow-hidden aspect-[3/4] bg-gray-50 border border-gray-100 p-8 flex items-center justify-center transition-all duration-500 hover:shadow-xl">
+                        <img src="img/book_concrete_fever.png" alt="Concrete Fever Book Cover" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute top-4 left-4 bg-black text-white font-sans text-[9px] uppercase tracking-[0.2em] px-2.5 py-1">New York</div>
+                    </div>
+                    <div class="flex justify-between items-start pt-2">
+                        <div>
+                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Concrete Fever</h4>
+                            <p class="font-sans text-sm text-gray-500 italic mt-0.5">by Cassidy Vance</p>
+                        </div>
+                        <span class="font-sans text-xs uppercase tracking-[0.1em] border border-gray-200 px-2 py-0.5 text-gray-400 rounded-sm">Prose Zine</span>
+                    </div>
+                    <p class="font-sans text-sm text-gray-600 leading-relaxed">
+                        A fragmented, stream-of-consciousness drift through Brooklyn's evolving industrial pockets. Explores structural decay, sensory overload, and late-night municipal sounds.
+                    </p>
+                </div>
+
+                <!-- Work 2 -->
+                <div class="group flex flex-col space-y-4">
+                    <div class="relative overflow-hidden aspect-[3/4] bg-gray-50 border border-gray-100 p-8 flex items-center justify-center transition-all duration-500 hover:shadow-xl">
+                        <img src="img/book_brutalist_heart.png" alt="Brutalist Heart Book Cover" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute top-4 left-4 bg-black text-white font-sans text-[9px] uppercase tracking-[0.2em] px-2.5 py-1">London</div>
+                    </div>
+                    <div class="flex justify-between items-start pt-2">
+                        <div>
+                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Brutalist Heart</h4>
+                            <p class="font-sans text-sm text-gray-500 italic mt-0.5">by Jude Sterling</p>
+                        </div>
+                        <span class="font-sans text-xs uppercase tracking-[0.1em] border border-gray-200 px-2 py-0.5 text-gray-400 rounded-sm">Essays</span>
+                    </div>
+                    <p class="font-sans text-sm text-gray-600 leading-relaxed">
+                        A collection of critical reflections on the concrete architecture of post-war London, examining the emotional weight of public housing and urban layout designs.
+                    </p>
+                </div>
+
+                <!-- Work 3 -->
+                <div class="group flex flex-col space-y-4">
+                    <div class="relative overflow-hidden aspect-[3/4] bg-gray-50 border border-gray-100 p-8 flex items-center justify-center transition-all duration-500 hover:shadow-xl">
+                        <img src="img/book_asphalt_garden.png" alt="Asphalt Garden Book Cover" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute top-4 left-4 bg-black text-white font-sans text-[9px] uppercase tracking-[0.2em] px-2.5 py-1">New York</div>
+                    </div>
+                    <div class="flex justify-between items-start pt-2">
+                        <div>
+                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Asphalt Garden</h4>
+                            <p class="font-sans text-sm text-gray-500 italic mt-0.5">by Maya Lin-West</p>
+                        </div>
+                        <span class="font-sans text-xs uppercase tracking-[0.1em] border border-gray-200 px-2 py-0.5 text-gray-400 rounded-sm">Poetry Collage</span>
+                    </div>
+                    <p class="font-sans text-sm text-gray-600 leading-relaxed">
+                        Visual poetry combining pressed wildflowers collected from Manhattan sidewalk cracks with scanned snippets of industrial documentation and municipal records.
+                    </p>
+                </div>
+
+                <!-- Work 4 -->
+                <div class="group flex flex-col space-y-4">
+                    <div class="relative overflow-hidden aspect-[3/4] bg-gray-50 border border-gray-100 p-8 flex items-center justify-center transition-all duration-500 hover:shadow-xl">
+                        <img src="img/book_fog_neon.png" alt="Fog &amp; Neon Book Cover" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute top-4 left-4 bg-black text-white font-sans text-[9px] uppercase tracking-[0.2em] px-2.5 py-1">London</div>
+                    </div>
+                    <div class="flex justify-between items-start pt-2">
+                        <div>
+                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Fog &amp; Neon</h4>
+                            <p class="font-sans text-sm text-gray-500 italic mt-0.5">by Elena Rostova</p>
+                        </div>
+                        <span class="font-sans text-xs uppercase tracking-[0.1em] border border-gray-200 px-2 py-0.5 text-gray-400 rounded-sm">Fiction</span>
+                    </div>
+                    <p class="font-sans text-sm text-gray-600 leading-relaxed">
+                        Speculative stories set in a near-future London where neon pollution has replaced natural sunlight. Explores themes of memory, connection, and corporate light grids.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Submissions -->
+        <section id="submissions" class="pt-24 border-t border-gray-100 space-y-12 scroll-mt-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                <div class="space-y-6">
+                    <p class="font-sans text-[10px] uppercase tracking-[0.3em] text-allergyRed font-semibold">Creator Registry</p>
+                    <h3 class="font-serif text-4xl italic">Send Us Your Work</h3>
+                    <p class="font-sans text-sm text-gray-600 leading-relaxed">
+                        We are open to submissions from creators based in the New York or London metropolitan areas. We publish zines, visual art prints, poetry, essays, and experimental novellas.
+                    </p>
+                    <div class="space-y-4 font-sans text-sm text-gray-500">
+                        <p class="flex items-start gap-2">
+                            <span class="text-allergyRed font-bold">•</span>
+                            <span>No academic background or publication history required.</span>
+                        </p>
+                        <p class="flex items-start gap-2">
+                            <span class="text-allergyRed font-bold">•</span>
+                            <span>Send 5–10 pages of prose/poetry, or a concept pitch.</span>
+                        </p>
+                        <p class="flex items-start gap-2">
+                            <span class="text-allergyRed font-bold">•</span>
+                            <span>Creators retain full ownership of their underlying copyrights.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Submissions Form -->
+                <div class="bg-gray-50 border border-gray-100 p-8 rounded-sm space-y-6 font-sans">
+                    <h4 class="font-serif text-2xl italic text-black">Pitch Terminal</h4>
+                    <form id="submission-form" class="space-y-4" onsubmit="event.preventDefault(); submitPitch();">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-1" for="creator-name">Name / Alias</label>
+                            <input type="text" id="creator-name" required class="w-full bg-white border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-allergyRed transition-colors rounded-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-1" for="creator-city">Location</label>
+                                <select id="creator-city" class="w-full bg-white border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-allergyRed transition-colors rounded-none">
+                                    <option value="new-york">New York</option>
+                                    <option value="london">London</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-1" for="creator-email">Contact Info</label>
+                                <input type="email" id="creator-email" placeholder="email@address.com" required class="w-full bg-white border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-allergyRed transition-colors rounded-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-1" for="creator-pitch">Pitch or Text Sample</label>
+                            <textarea id="creator-pitch" rows="5" required placeholder="Describe your zine, poetry, or writing concept..." class="w-full bg-white border border-gray-200 p-4 text-sm focus:outline-none focus:border-allergyRed transition-colors rounded-none font-mono"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-black hover:bg-allergyRed text-white text-xs uppercase tracking-[0.2em] py-3.5 transition-colors font-semibold duration-300">
+                            Transmit Pitch
+                        </button>
+                    </form>
+                    <div id="submission-success" class="hidden text-center py-8 space-y-4">
+                        <div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                        <h5 class="font-serif text-xl italic">Pitch Received</h5>
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            Your manuscript pitch has been logged into the Art Allergy system. We will contact you within 14 days if we wish to proceed to print.
+                        </p>
+                        <button onclick="resetForm()" class="text-[10px] uppercase tracking-[0.2em] text-allergyRed underline">Send Another</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <footer class="mt-auto py-20 w-full max-w-5xl flex justify-between items-end font-sans text-[9px] uppercase tracking-[0.3em] opacity-30">
-        <div>Art Allergy &copy; 2025</div>
-        <div class="text-right">Official Licensee for Wallno</div>
+    <footer class="mt-24 py-12 border-t border-gray-100 w-full max-w-5xl flex justify-between items-end font-sans text-[9px] uppercase tracking-[0.3em] opacity-30">
+        <div>Art Allergy &copy; 2026</div>
+        <div class="text-right">NY &amp; London Editorial Desk</div>
     </footer>
+
+    <script>
+        function submitPitch() {
+            document.getElementById('submission-form').classList.add('hidden');
+            document.getElementById('submission-success').classList.remove('hidden');
+        }
+        function resetForm() {
+            document.getElementById('submission-form').reset();
+            document.getElementById('submission-form').classList.remove('hidden');
+            document.getElementById('submission-success').classList.add('hidden');
+        }
+    </script>
 
     <script>
         (function() {

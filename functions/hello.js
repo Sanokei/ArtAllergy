@@ -4,12 +4,13 @@ export async function onRequest(context) {
   const timestamp = new Date().toISOString();
 
   return new Response(JSON.stringify({
-    message: "Art Allergy Monitoring Active",
-    status: "Vandalism levels normal",
+    message: "Art Allergy Publishing House API Active",
+    status: "Submissions open for New York & London creators",
     metadata: {
       visitor_ip: clientIP,
       server_time: timestamp,
-      office: "Art Allergy Registry"
+      office: "Art Allergy Editorial Desk",
+      locations: ["New York", "London"]
     }
   }), {
     headers: {
