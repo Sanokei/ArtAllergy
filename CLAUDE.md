@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Art Allergy is the website for an independent publishing house (NY & London) that helps creators bring any creative work to market: books, zines, art prints, board games, video games, films, and merch. It is a static HTML site deployed to Cloudflare Pages, with one serverless function for a lightweight API endpoint.
+Art Allergy is the website for an independent publishing house (artallergy.com, NY & London) that helps creators bring any creative work to market: books, zines, art prints, board games, video games, films, and merch. It is a static HTML site deployed to Cloudflare Pages, with one serverless function for a lightweight API endpoint.
 
 The house tagline is: **"A publishing house for the immune."**
 

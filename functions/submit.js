@@ -11,12 +11,12 @@
  *      → Email bindings: add send_email binding named "EMAIL"
  *
  *   2. Dashboard → Workers & Pages → artallergy → Settings → Variables
- *      → Add RECIPIENT_EMAIL = editorial@artallergy.org
+ *      → Add RECIPIENT_EMAIL = editorial@artallergy.com
  *
  * Until the EMAIL binding is configured, the function accepts submissions
  * and logs them without sending email.
  *
- * ROUTE: POST https://artallergy.org/api/submit
+ * ROUTE: POST https://artallergy.com/api/submit
  */
 
 // ---- Configuration ----
@@ -29,13 +29,13 @@
  *
  * The `from` address must use a domain onboarded to Email Sending.
  */
-const RECIPIENT_EMAIL = "editorial@artallergy.org";
+const RECIPIENT_EMAIL = "editorial@artallergy.com";
 
 /**
  * The verified sender address (domain must be onboarded to Email Sending).
  * Update this to match your actual verified sending domain.
  */
-const SENDER_EMAIL = "submissions@artallergy.org";
+const SENDER_EMAIL = "submissions@artallergy.com";
 
 /**
  * Minimum pitch length in characters. Shorter submissions are treated as spam.
