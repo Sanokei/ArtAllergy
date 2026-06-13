@@ -32,10 +32,15 @@ img/                # All static images (book covers, icon, OG image, hero art)
 - **Painting reveal** on a separate `paint-canvas` sized to the painting area inside the red circle. 9px circular brush strokes reveal `painting_canvasonly.png` with `source-atop` tint (random color from 12-color palette, picked on logo mouseenter). Brush strokes persist directly on the canvas — no animation loop needed.
 - **Google Fonts**: Playfair Display + Inter, loaded via the standard CSS API
 
-## Cloudflare Function
+## Cloudflare Functions
 
-`functions/hello.js` exports `onRequest(context)`. It returns a JSON status response with the visitor's IP (from `CF-Connecting-IP` header) and server timestamp. This is a Cloudflare Pages Function (not a Worker) — it lives in `functions/` and is deployed as part of the Pages project. The route is `/api/hello` (derived from the filename).
+- `functions/hello.js` — JSON status at `/api/hello` (IP + timestamp)
+- `functions/submit.js` — POST at `/api/submit`, validates + spam-checks pitches, then forwards to the email-relay Worker via service binding
 
-## Adding Pages Functions
+### Pitch terminal email flow
 
-To add new API endpoints, create additional files in `functions/` with an `onRequest(context)` export. The route matches the filename. For example, `functions/submit.js` would serve at `/api/submit`.
+```
+Pages Function (submit.js) → Service Binding (EMAIL_RELAY) → email-relay Worker → EMAIL.send()
+```
+
+The Worker (`workers/email-relay.js`) owns the `send_email` binding since Pages doesn't support it. The Pages Function calls the Worker internally with a shared secret header. `wrangler.jsonc` in `workers/` configures the Worker; the Pages project bindings are managed via Cloudflare API (service binding + env vars set on the project).

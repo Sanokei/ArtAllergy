@@ -32,14 +32,16 @@ export default {
       const payload = await request.json();
       const { subject, text } = payload;
 
-      // Sanitize and validate replyTo
+      // Sanitize all fields against header injection
+      const safeSubject = (subject || '').replace(/[\r\n]/g, '').trim();
+      const safeText = (text || '').replace(/[\r\n]/g, '');
       let replyTo = '';
       if (payload.replyTo) {
         replyTo = payload.replyTo.replace(/[\r\n]/g, '').trim();
         if (!EMAIL_RE.test(replyTo)) replyTo = '';
       }
 
-      if (!subject || !text) {
+      if (!safeSubject || !safeText) {
         return new Response(JSON.stringify({ error: 'Missing required fields' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -49,8 +51,8 @@ export default {
       await env.EMAIL.send({
         to: allowedRecipient,
         from: { email: 'submissions@artallergy.com', name: 'Art Allergy Submissions' },
-        subject,
-        text,
+        subject: safeSubject,
+        text: safeText,
         ...(replyTo ? { replyTo } : {}),
       });
 
