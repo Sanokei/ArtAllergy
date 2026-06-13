@@ -209,15 +209,16 @@ export async function onRequest(context) {
   // ---- Send Email ----
   let emailSent = false;
 
-  // Determine recipient: env var overrides the hardcoded default
+  // Determine recipient and sender: env vars override hardcoded defaults
   const recipient = (env && env.RECIPIENT_EMAIL) || RECIPIENT_EMAIL;
+  const sender = (env && env.SENDER_EMAIL) || SENDER_EMAIL;
 
   if (env && env.EMAIL) {
     // Production path: Cloudflare Email Service binding
     try {
       await env.EMAIL.send({
         to: recipient,
-        from: { email: SENDER_EMAIL, name: "Art Allergy Submissions" },
+        from: { email: sender, name: "Art Allergy Submissions" },
         subject: `[Pitch] New submission from ${data["creator-name"]}`,
         text: buildEmailBody(data),
         replyTo: data["creator-email"],
