@@ -28,7 +28,8 @@ img/                # All static images (book covers, icon, OG image, hero art)
 ```
 
 - **Tailwind CSS** is loaded via CDN with custom config inline (`allergyRed: '#d7232e'`, `serif: Playfair Display`, `sans: Inter`)
-- **Matter.js** (v0.19, CDN) powers an interactive physics simulation on the homepage — a segmented string rendered on a `<canvas>` that responds to mouse velocity. The engine runs with zero gravity, constrained segments, and force applied to nearby bodies on mousemove.
+- **Matter.js** (v0.19, CDN) powers a physics string (30 constrained bodies) on `hero-canvas` that responds to mouse velocity. Flicking a segment plays a pentatonic plucked-string note via Web Audio API with expanding ring flashes.
+- **Painting reveal** on a separate `paint-canvas` sized to the painting area inside the red circle. 9px circular brush strokes reveal `painting_canvasonly.png` with `source-atop` tint (random color from 12-color palette, picked on logo mouseenter). Brush strokes persist directly on the canvas — no animation loop needed.
 - **Google Fonts**: Playfair Display + Inter, loaded via the standard CSS API
 
 ## Cloudflare Function

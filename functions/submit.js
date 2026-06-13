@@ -5,19 +5,16 @@
  * Accepts creator pitches via POST, validates input, runs spam checks,
  * and forwards to the editorial desk via Cloudflare Email Service.
  *
- * PRODUCTION SETUP REQUIRED (Cloudflare Dashboard or wrangler CLI):
+ * PRODUCTION SETUP (Cloudflare Dashboard, one-time):
  *
- *   1. Enable Email Sending for your domain:
- *      $ npx wrangler email sending enable artallergy.org
+ *   1. Dashboard → Workers & Pages → artallergy → Settings → Functions
+ *      → Email bindings: add send_email binding named "EMAIL"
  *
- *   2. Add the send_email binding to wrangler.jsonc:
- *      { "send_email": [{ "name": "EMAIL" }] }
+ *   2. Dashboard → Workers & Pages → artallergy → Settings → Variables
+ *      → Add RECIPIENT_EMAIL = editorial@artallergy.org
  *
- *   3. Set the recipient email as a secret (or edit RECIPIENT_EMAIL below):
- *      $ npx wrangler secret put RECIPIENT_EMAIL
- *
- * If Email bindings are not yet configured, the function will still accept
- * submissions and log them — returning success without actually emailing.
+ * Until the EMAIL binding is configured, the function accepts submissions
+ * and logs them without sending email.
  *
  * ROUTE: POST https://artallergy.org/api/submit
  */

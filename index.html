@@ -34,6 +34,7 @@
 
     <!-- Styles & Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -75,18 +76,18 @@
         .menu-link:hover::after {
             width: 100%;
         }
-        
+
         /* Sine Wave Animation */
         @keyframes wave-animation {
             0% { stroke-dashoffset: 0; }
             100% { stroke-dashoffset: -20; }
         }
-        
+
         .squiggle-cross {
             stroke-dasharray: 1000;
             transition: stroke-width 0.3s ease;
         }
-        
+
         .logo-container:hover .squiggle-cross {
             /* Active wave movement on hover */
             animation: wave-animation 1s linear infinite;
@@ -95,26 +96,28 @@
         .prohibition-ring {
             transition: opacity 0.3s ease;
         }
-        
+
         /* Remove hover scale from cross as requested */
     </style>
 </head>
 <body class="flex flex-col min-h-screen items-center p-8 md:p-20">
-    
+
     <header class="w-full max-w-5xl flex flex-col md:flex-row items-center md:items-start justify-between gap-12">
         <!-- Logo Area -->
         <div class="logo-container flex flex-col items-center md:items-start group cursor-crosshair">
             <div class="relative w-72 h-72 mb-8">
-                <!-- Painting Hero Image (Inside the cross) -->
-                <div class="absolute inset-0 flex items-center justify-center p-12">
+                <!-- Hero Painting (Inside the cross) -->
+                <div class="absolute inset-0 flex items-center justify-center p-12" style="z-index:0">
                     <img src="img/painting_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
                 </div>
-                <!-- Red Prohibition Overlay (Large Cross) -->
-                <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full text-allergyRed fill-none overflow-visible">
+                <!-- Paint-reveal canvas — full circle area, between painting and ring -->
+                <canvas id="paint-canvas" class="absolute inset-0 w-full h-full" style="z-index:10; pointer-events:auto"></canvas>
+                <!-- Red Prohibition Overlay (Large Cross) — above everything -->
+                <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full text-allergyRed fill-none overflow-visible" style="z-index:30; pointer-events:none">
                     <!-- Thick Outer Ring -->
                     <circle cx="50" cy="50" r="57" class="prohibition-ring stroke-current stroke-[12] drop-shadow-md" />
                 </svg>
-                <canvas id="hero-canvas" class="absolute inset-0 w-full h-full pointer-events-auto"></canvas>
+                <canvas id="hero-canvas" class="absolute inset-0 w-full h-full" style="z-index:20; pointer-events:none"></canvas>
             </div>
             <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
             <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Independent Creative House</p>
@@ -166,7 +169,7 @@
                 </div>
                 <p class="font-sans text-sm text-gray-400 max-w-xs md:text-right">Available through select independent retailers in NY &amp; London and direct from our store.</p>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
                 <!-- Work 1 -->
                 <div class="group flex flex-col space-y-4">
@@ -189,18 +192,18 @@
                 <!-- Work 2 -->
                 <div class="group flex flex-col space-y-4">
                     <div class="relative overflow-hidden aspect-[3/4] bg-gray-50 border border-gray-100 p-8 flex items-center justify-center transition-all duration-500 hover:shadow-xl">
-                        <img src="img/boardgame_concrete_solstice.png" alt="Concrete Solstice Board Game" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
+                        <img src="img/boardgame_corporate_solstice.png" alt="Corporate Solstice Board Game" class="w-3/4 object-contain shadow-lg transition-transform duration-500 group-hover:scale-105">
                         <div class="absolute top-4 left-4 bg-black text-white font-sans text-[9px] uppercase tracking-[0.2em] px-2.5 py-1">London</div>
                     </div>
                     <div class="flex justify-between items-start pt-2">
                         <div>
-                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Concrete Solstice</h4>
+                            <h4 class="font-serif text-2xl font-bold group-hover:text-allergyRed transition-colors">Corporate Solstice</h4>
                             <p class="font-sans text-sm text-gray-500 italic mt-0.5">by The Workshop</p>
                         </div>
                         <span class="font-sans text-xs uppercase tracking-[0.1em] border border-gray-200 px-2 py-0.5 text-gray-400 rounded-sm">Deck Builder</span>
                     </div>
                     <p class="font-sans text-sm text-gray-600 leading-relaxed">
-                        A two-player deck-building game set in a brutalist tower block during the longest night of the year. Players draft residents, salvage materials, and negotiate blackouts while racing to keep their floor's heating grid alive.
+                        A two-player deck-building game set in a brutalist tower block during the longest night of the year. Players draft executives, trade memos, and negotiate hostile takeovers while racing to control the last functional elevator bank.
                     </p>
                 </div>
 
@@ -266,7 +269,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <!-- Submissions Form -->
                 <div class="bg-gray-50 border border-gray-100 p-8 rounded-sm space-y-6 font-sans">
                     <h4 class="font-serif text-2xl italic text-black">Pitch Terminal</h4>
@@ -407,99 +410,307 @@
         document.getElementById('submission-form').addEventListener('submit', submitPitch);
     </script>
 
+    <!-- Matter.js string + audio -->
     <script>
         (function() {
-            const canvas = document.getElementById('hero-canvas');
-            const parent = canvas.parentElement;
-            const ctx = canvas.getContext('2d');
+            if (typeof Matter === 'undefined') { console.error('Matter.js not loaded'); return; }
 
-            let width, height, scale;
-            let canvasImg = null;        // painting_canvasonly.png loaded as Image
-            let currentColor = '#d7232e'; // default allergyRed
-            let isDrawing = false;
-            let lastX = 0, lastY = 0;
-            const BRUSH_SIZE = 12;
+            const Engine = Matter.Engine, Runner = Matter.Runner, Bodies = Matter.Bodies,
+                  Body = Matter.Body, Constraint = Matter.Constraint, Composite = Matter.Composite,
+                  Vector = Matter.Vector, World = Matter.World;
 
-            // —— Random color on enter ——————————————————————————————————————
-            function randomColor() {
-                const hue = Math.floor(Math.random() * 360);
-                const sat = 60 + Math.floor(Math.random() * 30); // 60-90%
-                const lit = 45 + Math.floor(Math.random() * 20); // 45-65%
-                return `hsl(${hue}, ${sat}%, ${lit}%)`;
+            const hc = document.getElementById('hero-canvas');
+            const hparent = hc.parentElement;
+
+            const engine = Engine.create();
+            engine.gravity.y = 0; engine.gravity.x = 0;
+            const world = engine.world;
+            const runner = Runner.create();
+            const SEGMENTS = 30;
+            let stringBodies = [];
+
+            let width, height, hscale;
+            let lastMouseX = 0, lastMouseY = 0;
+
+            function createString() {
+                Composite.clear(world);
+                stringBodies = [];
+                const sx = width * 0.09, sy = height * 0.09;
+                const ex = width * 0.91, ey = height * 0.91;
+                const dx = (ex - sx) / (SEGMENTS - 1);
+                const dy = (ey - sy) / (SEGMENTS - 1);
+                let prev = null;
+                for (let i = 0; i < SEGMENTS; i++) {
+                    const fix = i === 0 || i === SEGMENTS - 1;
+                    const body = Bodies.circle(sx + i*dx, sy + i*dy, 5, {
+                        isStatic: fix, frictionAir: 0.05, density: 0.1,
+                        restitution: 0.9, collisionFilter: { group: -1 }
+                    });
+                    stringBodies.push(body);
+                    World.add(world, body);
+                    if (prev) {
+                        World.add(world, Constraint.create({
+                            bodyA: prev, bodyB: body, stiffness: 0.5, damping: 0.1,
+                            length: Vector.magnitude(Vector.sub(prev.position, body.position)),
+                            render: { visible: false }
+                        }));
+                    }
+                    prev = body;
+                }
             }
 
-            // —— Load the canvas-only painting image —————————————————————————
-            canvasImg = new Image();
-            canvasImg.src = 'img/painting_canvasonly.png';
-            canvasImg.onload = () => resize();
-
-            // —— Resize: match parent, handle DPI, redraw background —————————
             function resize() {
-                const rect = parent.getBoundingClientRect();
-                width = rect.width;
-                height = rect.height;
-                scale = window.devicePixelRatio || 1;
-                canvas.width = width * scale;
-                canvas.height = height * scale;
-                ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
-                ctx.scale(scale, scale);
-                drawBackground();
+                const rect = hparent.getBoundingClientRect();
+                width = rect.width; height = rect.height;
+                hscale = window.devicePixelRatio || 1;
+                hc.width = width * hscale; hc.height = height * hscale;
+                createString();
             }
 
-            // —— Draw the canvas-only image as the background ————————————————
-            function drawBackground() {
-                if (!canvasImg || !canvasImg.complete) return;
-                ctx.clearRect(0, 0, width, height);
-                ctx.drawImage(canvasImg, 0, 0, width, height);
+            let lastRenderTime = performance.now();
+            function render() {
+                const now = performance.now();
+                const dt = now - lastRenderTime;
+                lastRenderTime = now;
+
+                const ctx = hc.getContext('2d');
+                ctx.clearRect(0, 0, hc.width, hc.height);
+                ctx.save();
+                ctx.scale(hscale, hscale);
+
+                if (stringBodies.length > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(stringBodies[0].position.x, stringBodies[0].position.y);
+                    for (let i = 1; i < stringBodies.length - 2; i++) {
+                        const xc = (stringBodies[i].position.x + stringBodies[i+1].position.x)/2;
+                        const yc = (stringBodies[i].position.y + stringBodies[i+1].position.y)/2;
+                        ctx.quadraticCurveTo(stringBodies[i].position.x, stringBodies[i].position.y, xc, yc);
+                    }
+                    if (stringBodies.length > 2) {
+                        const i = stringBodies.length - 2;
+                        ctx.quadraticCurveTo(stringBodies[i].position.x, stringBodies[i].position.y,
+                                             stringBodies[i+1].position.x, stringBodies[i+1].position.y);
+                    }
+                    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                    ctx.strokeStyle = '#d7232e'; ctx.lineWidth = 24;
+                    ctx.stroke();
+                }
+
+                checkPlucks();
+                updateFlashes(dt);
+                drawFlashes(ctx);
+
+                ctx.restore();
+                requestAnimationFrame(render);
             }
 
-            // —— Draw a dot at the given coordinate ——————————————————————————
-            function drawDot(x, y) {
-                ctx.beginPath();
-                ctx.arc(x, y, BRUSH_SIZE / 2, 0, Math.PI * 2);
-                ctx.fillStyle = currentColor;
-                ctx.fill();
-                // Slightly larger, more transparent halo
-                ctx.beginPath();
-                ctx.arc(x, y, BRUSH_SIZE, 0, Math.PI * 2);
-                ctx.fillStyle = currentColor.replace(')', ', 0.25)').replace('hsl', 'hsla');
-                ctx.fill();
+            // --- Mouse flick ---
+            document.addEventListener('mousemove', function(e) {
+                ensureAudio();
+                const rect = hc.getBoundingClientRect();
+                const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                const s = Math.sqrt((mx-lastMouseX)**2 + (my-lastMouseY)**2);
+                lastMouseX = mx; lastMouseY = my;
+                if (s > 2 && mx >= 0 && mx <= width && my >= 0 && my <= height) {
+                    for (let body of stringBodies) {
+                        if (body.isStatic) continue;
+                        const d = Vector.magnitude(Vector.sub({x:mx,y:my}, body.position));
+                        if (d < 40) {
+                            const f = Vector.mult(
+                                Vector.normalise({x: mx-lastMouseX+body.position.x-mx, y: my-lastMouseY+body.position.y-my}),
+                                Math.min(0.002*s, 0.1)
+                            );
+                            Body.applyForce(body, body.position, f);
+                        }
+                    }
+                }
+            });
+
+            // --- Audio ---
+            let audioCtx = null, activeVoices = 0;
+            const MAX_VOICES = 8;
+            const bodyCooldowns = new Array(SEGMENTS).fill(0);
+            const COOLDOWN_MS = 100, SPEED_THRESHOLD = 2;
+            const pentatonic = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00,1046.50,1174.66,1318.51,1567.98,1760.00];
+
+            function ensureAudio() {
+                if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            }
+            function playPluck(i, speed) {
+                if (activeVoices >= MAX_VOICES) return;
+                const now = performance.now();
+                if (now - bodyCooldowns[i] < COOLDOWN_MS) return;
+                bodyCooldowns[i] = now;
+                ensureAudio(); if (!audioCtx) return;
+                const freq = pentatonic[(i-1) % pentatonic.length];
+                const gain = Math.min(Math.max(speed*0.025,0.02),0.25);
+                const osc = audioCtx.createOscillator();
+                const gn = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gn.gain.setValueAtTime(gain, audioCtx.currentTime);
+                gn.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.2);
+                osc.connect(gn); gn.connect(audioCtx.destination);
+                activeVoices++; osc.start();
+                osc.stop(audioCtx.currentTime+0.25);
+                osc.onended = function(){ activeVoices--; };
+            }
+            const prevSpeeds = new Float32Array(SEGMENTS);
+            function checkPlucks() {
+                for (let i = 1; i < SEGMENTS-1; i++) {
+                    const sp = stringBodies[i].speed;
+                    if (sp > SPEED_THRESHOLD && prevSpeeds[i] <= SPEED_THRESHOLD) playPluck(i, sp);
+                    prevSpeeds[i] = sp;
+                }
             }
 
-            // —— Mouse enters canvas → new random color —————————————————————
-            canvas.addEventListener('mouseenter', () => {
-                currentColor = randomColor();
-                isDrawing = true;
-            });
+            // --- Pluck flashes ---
+            let pluckFlashes = [];
+            const FLASH_DURATION = 300;
+            function addPluckFlash(x, y) { pluckFlashes.push({x, y, age: 0}); }
+            function updateFlashes(dt) {
+                for (let f of pluckFlashes) f.age += dt;
+                pluckFlashes = pluckFlashes.filter(f => f.age < FLASH_DURATION);
+            }
+            function drawFlashes(ctx) {
+                for (let f of pluckFlashes) {
+                    const p = f.age / FLASH_DURATION, a = 1 - p;
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, 5 + p*20, 0, Math.PI*2);
+                    ctx.strokeStyle = 'rgba(255,255,200,' + a + ')';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+            const _playPluck = playPluck;
+            playPluck = function(i, speed) {
+                _playPluck(i, speed);
+                if (stringBodies[i]) addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y);
+            };
 
-            // —— Mouse leaves → stop drawing ————————————————————————————————
-            canvas.addEventListener('mouseleave', () => {
-                isDrawing = false;
-            });
-
-            // —— Draw on hover ——————————————————————————————————————————————
-            canvas.addEventListener('mousemove', (e) => {
-                if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                // Skip if too close to last point (avoid stacking when idle)
-                const dist = Math.hypot(x - lastX, y - lastY);
-                if (dist < BRUSH_SIZE * 0.4) return;
-
-                lastX = x;
-                lastY = y;
-                drawDot(x, y);
-            });
-
-            window.addEventListener('resize', () => {
-                clearTimeout(window.resizeTimer);
-                window.resizeTimer = setTimeout(resize, 250);
-            });
-
-            // Initial setup
+            // --- Start ---
             resize();
+            Runner.run(runner, engine);
+            requestAnimationFrame(render);
+            window.addEventListener('resize', function() {
+                clearTimeout(window._resizeTimer);
+                window._resizeTimer = setTimeout(resize, 250);
+            });
+        })();
+    </script>
+
+    <!-- Painting reveal canvas -->
+    <script>
+        (function() {
+            const pc = document.getElementById('paint-canvas');
+
+            const PAINTINGS = [
+                'img/painting_canvas/monet_1.png',
+                'img/painting_canvas/monet_2.png',
+                'img/painting_canvas/skull_1.png',
+            ];
+            const pimg = new Image();
+            pimg.src = PAINTINGS[Math.floor(Math.random() * PAINTINGS.length)];
+            let ready = false, pwidth = 0, pheight = 0, pscale = 1;
+
+            const PALETTE = [
+                '#d7232e', '#c71585', '#8b008b', '#4169e1',
+                '#008080', '#daa520', '#b8860b', '#228b22',
+                '#cd853f', '#a0522d', '#2e8b57', '#b22222',
+            ];
+            let accent = PALETTE[0];
+
+            function ensureSize() {
+                const rect = pc.getBoundingClientRect();
+                const w = rect.width, h = rect.height;
+                if (w === 0 || h === 0) return false;
+                pscale = window.devicePixelRatio || 1;
+                // Only resize internal buffer if display size changed (avoids clearing strokes)
+                if (w !== pwidth || h !== pheight) {
+                    pwidth = w; pheight = h;
+                    pc.width = Math.round(pwidth * pscale);
+                    pc.height = Math.round(pheight * pscale);
+                }
+                return true;
+            }
+
+            pimg.onload = function() {
+                ready = true;
+                ensureSize();
+            };
+
+            const logo = pc.closest('.logo-container');
+            if (logo) {
+                logo.addEventListener('mouseenter', function() {
+                    accent = PALETTE[Math.floor(Math.random()*PALETTE.length)];
+                });
+            }
+
+            const BRUSH_R = 16;
+
+            const PAINT_PAD = 48; // matches p-12 (12 * 4px = 48px Tailwind default)
+
+            function brush(x, y) {
+                if (!ready) return;
+                if (pc.width === 0 || pc.height === 0) ensureSize();
+                if (pc.width === 0) return;
+
+                const ctx = pc.getContext('2d');
+                ctx.save();
+                ctx.scale(pscale, pscale);
+
+                // Paint area is inset by PAINT_PAD on all sides
+                const pw = pwidth - PAINT_PAD * 2;
+                const ph = pheight - PAINT_PAD * 2;
+
+                // ---- step 1: feathered radial brush with random wobble ----
+                const angle = Math.random() * Math.PI * 2;
+                const wobX = x + Math.cos(angle) * 2;
+                const wobY = y + Math.sin(angle) * 2;
+                const grad = ctx.createRadialGradient(wobX, wobY, 1, x, y, BRUSH_R);
+                grad.addColorStop(0, 'rgba(0,0,0,1)');
+                grad.addColorStop(0.35, 'rgba(0,0,0,0.85)');
+                grad.addColorStop(0.7, 'rgba(0,0,0,0.3)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, BRUSH_R, 0, Math.PI*2);
+                ctx.fill();
+
+                // ---- step 2: keep only where brush was drawn ----
+                ctx.globalCompositeOperation = 'source-in';
+
+                // ---- step 3: draw painting centered in the padded area ----
+                const is = Math.max(pw/pimg.width, ph/pimg.height);
+                const iw = pimg.width*is, ih = pimg.height*is;
+                const ix = PAINT_PAD + (pw-iw)/2;
+                const iy = PAINT_PAD + (ph-ih)/2;
+                ctx.drawImage(pimg, ix, iy, iw, ih);
+
+                // ---- step 4: tint only opaque pixels ----
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.globalAlpha = 0.35;
+                ctx.fillStyle = accent;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            pc.addEventListener('mousemove', function(e) {
+                const rect = pc.getBoundingClientRect();
+                brush(e.clientX - rect.left, e.clientY - rect.top);
+            });
+
+            pc.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const rect = pc.getBoundingClientRect();
+                for (let t of e.touches) brush(t.clientX - rect.left, t.clientY - rect.top);
+            }, { passive: false });
+
+            window.addEventListener('resize', function() {
+                clearTimeout(window._paintResizeTimer);
+                window._paintResizeTimer = setTimeout(function() { ensureSize(); }, 250);
+            });
         })();
     </script>
 </body>
