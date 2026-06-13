@@ -1,41 +1,15 @@
 /**
- * Art Allergy - Pitch Submission Endpoint
+ * Art Allergy — Pitch Submission Endpoint
  * Cloudflare Pages Function: /api/submit
  *
- * Accepts creator pitches via POST, validates input, runs spam checks,
- * and forwards to the editorial desk via Cloudflare Email Service.
+ * Flow: Form → validate → spam checks → email-relay Worker (service binding) → EMAIL.send()
  *
- * PRODUCTION SETUP (Cloudflare Dashboard, one-time):
- *
- *   1. Dashboard → Workers & Pages → artallergy → Settings → Functions
- *      → Email bindings: add send_email binding named "EMAIL"
- *
- *   2. Dashboard → Workers & Pages → artallergy → Settings → Variables
- *      → Add RECIPIENT_EMAIL = editorial@artallergy.com
- *
- * Until the EMAIL binding is configured, the function accepts submissions
- * and logs them without sending email.
+ * The send_email binding lives on the Worker, not Pages.
+ * Set env.RECIPIENT_EMAIL and env.SHARED_RELAY_SECRET in the Dashboard
+ * (or wrangler.jsonc) so they're available at runtime.
  *
  * ROUTE: POST https://artallergy.com/api/submit
  */
-
-// ---- Configuration ----
-
-/**
- * Email address that receives pitches.
- *
- * Change this to the real editorial desk address, or set it via
- * Cloudflare Secret: `npx wrangler secret put RECIPIENT_EMAIL`
- *
- * The `from` address must use a domain onboarded to Email Sending.
- */
-const RECIPIENT_EMAIL = "editorial@artallergy.com";
-
-/**
- * The verified sender address (domain must be onboarded to Email Sending).
- * Update this to match your actual verified sending domain.
- */
-const SENDER_EMAIL = "submissions@artallergy.com";
 
 /**
  * Minimum pitch length in characters. Shorter submissions are treated as spam.
@@ -206,37 +180,41 @@ export async function onRequest(context) {
     }
   }
 
-  // ---- Send Email ----
+  // ---- Send Email via email-relay Worker ----
   let emailSent = false;
 
-  // Determine recipient and sender: env vars override hardcoded defaults
-  const recipient = (env && env.RECIPIENT_EMAIL) || RECIPIENT_EMAIL;
-  const sender = (env && env.SENDER_EMAIL) || SENDER_EMAIL;
+  const relay = env && env.EMAIL_RELAY;         // Service binding to the Worker
+  const secret = env && env.SHARED_RELAY_SECRET; // Shared secret for defense-in-depth
 
-  if (env && env.EMAIL) {
-    // Production path: Cloudflare Email Service binding
+  if (relay && secret) {
     try {
-      await env.EMAIL.send({
-        to: recipient,
-        from: { email: sender, name: "Art Allergy Submissions" },
-        subject: `[Pitch] New submission from ${data["creator-name"]}`,
-        text: buildEmailBody(data),
-        replyTo: data["creator-email"],
+      const relayResp = await relay.fetch("https://email-relay.internal/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Relay-Secret": secret,
+        },
+        body: JSON.stringify({
+          subject: `[Pitch] New submission from ${data["creator-name"]}`,
+          text: buildEmailBody(data),
+          replyTo: data["creator-email"],
+        }),
       });
-      emailSent = true;
+
+      if (relayResp.ok) {
+        emailSent = true;
+      } else {
+        console.error("Relay worker rejected:", relayResp.status, await relayResp.text());
+      }
     } catch (err) {
-      console.error("Email send failed:", err.code || "unknown", err.message || err);
-      // Fall through — we still log and return success to the user.
-      // The submission data is preserved in Cloudflare's function logs.
+      console.error("Relay call failed:", err.message || err);
     }
   } else {
-    // Fallback: Email binding not configured.
-    // Log diagnostic info only — never log PII to function logs.
+    // Fallback: Worker binding or secret not configured.
     console.log(JSON.stringify({
       type: "pitch_submission",
       email_sent: false,
-      reason: "EMAIL binding not configured on env",
-      setup_instructions: "Add send_email binding in Cloudflare Dashboard or wrangler.jsonc",
+      reason: relay ? "SHARED_RELAY_SECRET not set" : "EMAIL_RELAY binding not configured",
       pitch_length: (data["creator-pitch"] || "").length,
       city: data["creator-city"],
     }));
