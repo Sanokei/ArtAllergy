@@ -616,6 +616,7 @@
             let ready = false, pwidth = 0, pheight = 0, pscale = 1;
             let paintBounds = { x: 0, y: 0, w: 0, h: 0 };
 
+
             const PALETTE = [
                 '#d7232e', '#c71585', '#8b008b', '#4169e1',
                 '#008080', '#daa520', '#b8860b', '#228b22',
@@ -627,9 +628,9 @@
                 const rect = pc.getBoundingClientRect();
                 const w = rect.width, h = rect.height;
                 if (w === 0 || h === 0) return false;
-                pscale = window.devicePixelRatio || 1;
-                if (w !== pwidth || h !== pheight) {
-                    pwidth = w; pheight = h;
+                const newScale = window.devicePixelRatio || 1;
+                if (w !== pwidth || h !== pheight || pscale !== newScale) {
+                    pwidth = w; pheight = h; pscale = newScale;
                     pc.width = Math.round(pwidth * pscale);
                     pc.height = Math.round(pheight * pscale);
                 }
