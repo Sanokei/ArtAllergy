@@ -108,7 +108,7 @@
             <div class="relative w-72 h-72 mb-8">
                 <!-- Hero Painting (Inside the cross) -->
                 <div class="absolute inset-0 flex items-center justify-center p-12" style="z-index:0">
-                    <img src="img/painting_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
+                    <img id="painting-frame" src="img/painting_hero.png" alt="Art Allergy Indie Publishing" class="w-full h-full object-contain drop-shadow-lg scale-110">
                 </div>
                 <!-- Paint-reveal canvas — full circle area, between painting and ring -->
                 <canvas id="paint-canvas" class="absolute inset-0 w-full h-full" style="z-index:10; pointer-events:auto"></canvas>
@@ -604,6 +604,7 @@
     <script>
         (function() {
             const pc = document.getElementById('paint-canvas');
+            const frameImg = document.getElementById('painting-frame');
 
             const PAINTINGS = [
                 'img/painting_canvas/monet_1.png',
@@ -613,6 +614,14 @@
             const pimg = new Image();
             pimg.src = PAINTINGS[Math.floor(Math.random() * PAINTINGS.length)];
             let ready = false, pwidth = 0, pheight = 0, pscale = 1;
+            let paintBounds = { x: 0, y: 0, w: 0, h: 0 };
+
+            const FRAME_APERTURE = {
+                left: 0.17375,
+                top: 0.16819,
+                right: 0.83109,
+                bottom: 0.83396,
+            };
 
             const PALETTE = [
                 '#d7232e', '#c71585', '#8b008b', '#4169e1',
@@ -626,13 +635,32 @@
                 const w = rect.width, h = rect.height;
                 if (w === 0 || h === 0) return false;
                 pscale = window.devicePixelRatio || 1;
-                // Only resize internal buffer if display size changed (avoids clearing strokes)
                 if (w !== pwidth || h !== pheight) {
                     pwidth = w; pheight = h;
                     pc.width = Math.round(pwidth * pscale);
                     pc.height = Math.round(pheight * pscale);
                 }
+                updatePaintBounds();
                 return true;
+            }
+
+            function updatePaintBounds() {
+                if (!frameImg) {
+                    paintBounds = { x: 0, y: 0, w: pwidth, h: pheight };
+                    return;
+                }
+
+                const canvasRect = pc.getBoundingClientRect();
+                const frameRect = frameImg.getBoundingClientRect();
+                const fx = frameRect.left - canvasRect.left;
+                const fy = frameRect.top - canvasRect.top;
+
+                paintBounds = {
+                    x: fx + frameRect.width * FRAME_APERTURE.left,
+                    y: fy + frameRect.height * FRAME_APERTURE.top,
+                    w: frameRect.width * (FRAME_APERTURE.right - FRAME_APERTURE.left),
+                    h: frameRect.height * (FRAME_APERTURE.bottom - FRAME_APERTURE.top),
+                };
             }
 
             pimg.onload = function() {
@@ -649,20 +677,15 @@
 
             const BRUSH_R = 16;
 
-            const PAINT_PAD = 48; // matches p-12 (12 * 4px = 48px Tailwind default)
-
             function brush(x, y) {
                 if (!ready) return;
                 if (pc.width === 0 || pc.height === 0) ensureSize();
                 if (pc.width === 0) return;
+                if (paintBounds.w <= 0 || paintBounds.h <= 0) updatePaintBounds();
 
                 const ctx = pc.getContext('2d');
                 ctx.save();
                 ctx.scale(pscale, pscale);
-
-                // Paint area is inset by PAINT_PAD on all sides
-                const pw = pwidth - PAINT_PAD * 2;
-                const ph = pheight - PAINT_PAD * 2;
 
                 // ---- step 1: feathered radial brush with random wobble ----
                 const angle = Math.random() * Math.PI * 2;
@@ -681,11 +704,11 @@
                 // ---- step 2: keep only where brush was drawn ----
                 ctx.globalCompositeOperation = 'source-in';
 
-                // ---- step 3: draw painting centered in the padded area ----
-                const is = Math.max(pw/pimg.width, ph/pimg.height);
+                // ---- step 3: draw painting centered in the frame aperture ----
+                const is = Math.max(paintBounds.w/pimg.width, paintBounds.h/pimg.height);
                 const iw = pimg.width*is, ih = pimg.height*is;
-                const ix = PAINT_PAD + (pw-iw)/2;
-                const iy = PAINT_PAD + (ph-ih)/2;
+                const ix = paintBounds.x + (paintBounds.w-iw)/2;
+                const iy = paintBounds.y + (paintBounds.h-ih)/2;
                 ctx.drawImage(pimg, ix, iy, iw, ih);
 
                 // ---- step 4: tint only opaque pixels ----
