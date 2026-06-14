@@ -616,13 +616,6 @@
             let ready = false, pwidth = 0, pheight = 0, pscale = 1;
             let paintBounds = { x: 0, y: 0, w: 0, h: 0 };
 
-            const FRAME_APERTURE = {
-                left: 0.17375,
-                top: 0.16819,
-                right: 0.83109,
-                bottom: 0.83396,
-            };
-
             const PALETTE = [
                 '#d7232e', '#c71585', '#8b008b', '#4169e1',
                 '#008080', '#daa520', '#b8860b', '#228b22',
@@ -652,14 +645,12 @@
 
                 const canvasRect = pc.getBoundingClientRect();
                 const frameRect = frameImg.getBoundingClientRect();
-                const fx = frameRect.left - canvasRect.left;
-                const fy = frameRect.top - canvasRect.top;
 
                 paintBounds = {
-                    x: fx + frameRect.width * FRAME_APERTURE.left,
-                    y: fy + frameRect.height * FRAME_APERTURE.top,
-                    w: frameRect.width * (FRAME_APERTURE.right - FRAME_APERTURE.left),
-                    h: frameRect.height * (FRAME_APERTURE.bottom - FRAME_APERTURE.top),
+                    x: frameRect.left - canvasRect.left,
+                    y: frameRect.top - canvasRect.top,
+                    w: frameRect.width,
+                    h: frameRect.height,
                 };
             }
 
@@ -704,12 +695,8 @@
                 // ---- step 2: keep only where brush was drawn ----
                 ctx.globalCompositeOperation = 'source-in';
 
-                // ---- step 3: draw painting centered in the frame aperture ----
-                const is = Math.max(paintBounds.w/pimg.width, paintBounds.h/pimg.height);
-                const iw = pimg.width*is, ih = pimg.height*is;
-                const ix = paintBounds.x + (paintBounds.w-iw)/2;
-                const iy = paintBounds.y + (paintBounds.h-ih)/2;
-                ctx.drawImage(pimg, ix, iy, iw, ih);
+                // ---- step 3: draw painting as a full overlay on the rendered frame ----
+                ctx.drawImage(pimg, paintBounds.x, paintBounds.y, paintBounds.w, paintBounds.h);
 
                 // ---- step 4: tint only opaque pixels ----
                 ctx.globalCompositeOperation = 'source-atop';
