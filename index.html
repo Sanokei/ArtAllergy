@@ -119,7 +119,13 @@
                 </svg>
                 <canvas id="hero-canvas" class="absolute inset-0 w-full h-full" style="z-index:20; pointer-events:none"></canvas>
             </div>
-            <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
+            <div class="relative flex items-center">
+                <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
+                <button id="mute-btn" class="absolute left-full ml-3 opacity-0 pointer-events-none transition-all duration-500 text-allergyRed hover:scale-110 active:scale-95 focus:outline-none flex items-center justify-center p-1" aria-label="Mute sound" title="Mute/Unmute sound">
+                    <svg id="unmute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    <svg id="mute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 hidden"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+                </button>
+            </div>
             <p class="font-sans text-[10px] uppercase tracking-[0.4em] mt-2 opacity-50">Independent Creative House</p>
         </div>
 
@@ -533,11 +539,44 @@
             const COOLDOWN_MS = 100, SPEED_THRESHOLD = 2;
             const pentatonic = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00,1046.50,1174.66,1318.51,1567.98,1760.00];
 
+            let isMuted = false;
+            let speakerVisible = false;
+            const muteBtn = document.getElementById('mute-btn');
+            const unmuteIcon = document.getElementById('unmute-icon');
+            const muteIcon = document.getElementById('mute-icon');
+
+            if (muteBtn) {
+                muteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    isMuted = !isMuted;
+                    if (isMuted) {
+                        unmuteIcon.classList.add('hidden');
+                        muteIcon.classList.remove('hidden');
+                        muteBtn.setAttribute('aria-label', 'Unmute sound');
+                    } else {
+                        muteIcon.classList.add('hidden');
+                        unmuteIcon.classList.remove('hidden');
+                        muteBtn.setAttribute('aria-label', 'Mute sound');
+                        ensureAudio();
+                    }
+                });
+            }
+
+            function showSpeakerButton() {
+                if (!speakerVisible && muteBtn) {
+                    speakerVisible = true;
+                    muteBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    muteBtn.classList.add('opacity-100', 'pointer-events-auto');
+                }
+            }
+
             function ensureAudio() {
                 if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
             }
             function playPluck(i, speed) {
+                showSpeakerButton();
+                if (isMuted) return;
                 if (activeVoices >= MAX_VOICES) return;
                 const now = performance.now();
                 if (now - bodyCooldowns[i] < COOLDOWN_MS) return;
@@ -566,9 +605,17 @@
             }
 
             // --- Pluck flashes ---
+            const noteColors = [
+                '215, 35, 46',   // C (Red / allergyRed)
+                '218, 165, 32',  // D (Yellow / Goldenrod)
+                '65, 105, 225',  // E (Sky Blue / Royal Blue)
+                '255, 127, 80',  // G (Orange / Coral)
+                '34, 139, 34'    // A (Green / Forest Green)
+            ];
+
             let pluckFlashes = [];
             const FLASH_DURATION = 300;
-            function addPluckFlash(x, y) { pluckFlashes.push({x, y, age: 0}); }
+            function addPluckFlash(x, y, color) { pluckFlashes.push({x, y, age: 0, color: color || '255, 255, 200'}); }
             function updateFlashes(dt) {
                 for (let f of pluckFlashes) f.age += dt;
                 pluckFlashes = pluckFlashes.filter(f => f.age < FLASH_DURATION);
@@ -578,7 +625,7 @@
                     const p = f.age / FLASH_DURATION, a = 1 - p;
                     ctx.beginPath();
                     ctx.arc(f.x, f.y, 5 + p*20, 0, Math.PI*2);
-                    ctx.strokeStyle = 'rgba(255,255,200,' + a + ')';
+                    ctx.strokeStyle = 'rgba(' + f.color + ',' + a + ')';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 }
@@ -586,7 +633,12 @@
             const _playPluck = playPluck;
             playPluck = function(i, speed) {
                 _playPluck(i, speed);
-                if (stringBodies[i]) addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y);
+                if (stringBodies[i]) {
+                    const noteIndex = (i - 1) % pentatonic.length;
+                    const pitchClass = noteIndex % 5;
+                    const color = noteColors[pitchClass];
+                    addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y, color);
+                }
             };
 
             // --- Start ---
