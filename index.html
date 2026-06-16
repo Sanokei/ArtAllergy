@@ -630,9 +630,22 @@
                 if (w === 0 || h === 0) return false;
                 const newScale = window.devicePixelRatio || 1;
                 if (w !== pwidth || h !== pheight || pscale !== newScale) {
+                    let saved = null;
+                    if (pc.width > 0 && pc.height > 0) {
+                        saved = document.createElement('canvas');
+                        saved.width = pc.width;
+                        saved.height = pc.height;
+                        saved.getContext('2d').drawImage(pc, 0, 0);
+                    }
+
                     pwidth = w; pheight = h; pscale = newScale;
                     pc.width = Math.round(pwidth * pscale);
                     pc.height = Math.round(pheight * pscale);
+
+                    if (saved) {
+                        const ctx = pc.getContext('2d');
+                        ctx.drawImage(saved, 0, 0, pc.width, pc.height);
+                    }
                 }
                 updatePaintBounds();
                 return true;
