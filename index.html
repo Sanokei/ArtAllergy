@@ -123,9 +123,9 @@
                 <canvas id="hero-canvas" class="absolute inset-0 w-full h-full" style="z-index:20; pointer-events:none"></canvas>
             </div>
             <div class="relative flex items-center">
-                <button id="mute-btn" class="absolute left-full ml-3 opacity-0 pointer-events-none transition-all duration-500 text-allergyRed hover:scale-110 active:scale-95 focus:outline-none flex items-center justify-center p-1" aria-label="Unmute sound" title="Mute/Unmute sound">
-                    <svg id="unmute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 hidden"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                    <svg id="mute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+                <button id="mute-btn" class="absolute left-full ml-3 opacity-0 pointer-events-none transition-all duration-500 text-allergyRed hover:scale-110 active:scale-95 focus:outline-none flex items-center justify-center p-1" aria-label="Mute sound" title="Mute/Unmute sound">
+                    <svg id="unmute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    <svg id="mute-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 hidden"><path d="M11 4.702a.7.7 0 0 0-1.203-.49l-3.244 3.244H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h2.553l3.244 3.244a.7.7 0 0 0 1.203-.49z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
                 </button>
                 <h1 class="font-serif text-5xl italic tracking-tight group-hover:text-allergyRed transition-colors">Art Allergy</h1>
             </div>
@@ -582,9 +582,13 @@
             const bodyCooldowns = new Array(SEGMENTS).fill(0);
             const COOLDOWN_MS = 100, SPEED_THRESHOLD = 2;
             const pentatonic = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00,1046.50,1174.66,1318.51,1567.98,1760.00];
+            const octaveColors = [
+                '215, 35, 46',   // Low Octave: Deep Brand Red (C4-A4)
+                '255, 127, 80',  // Medium Octave: Warm Coral Orange (C5-A5)
+                '255, 215, 0'    // High Octave: Bright Golden Yellow (C6-A6)
+            ];
 
-
-            let isMuted = true;
+            let isMuted = false;
             let speakerVisible = false;
             const muteBtn = document.getElementById('mute-btn');
             const unmuteIcon = document.getElementById('unmute-icon');
@@ -626,10 +630,11 @@
 
                 const noteIndex = Math.round(((i - 1) / (SEGMENTS - 3)) * (pentatonic.length - 1));
 
-                // Add visual flash mapped to rainbow hue based on segment index
+                // Add visual flash mapped to octave color (warm & bright palette)
                 if (stringBodies[i]) {
-                    const hue = Math.round(((i - 1) / (SEGMENTS - 3)) * 300);
-                    addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y, `hsla(${hue}, 100%, 60%, ALPHA)`);
+                    const octave = Math.floor(noteIndex / 5);
+                    const color = octaveColors[Math.min(octave, octaveColors.length - 1)];
+                    addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y, color);
                 }
 
                 showSpeakerButton();
@@ -662,7 +667,7 @@
             // --- Pluck flashes ---
             let pluckFlashes = [];
             const FLASH_DURATION = 300;
-            function addPluckFlash(x, y, color) { pluckFlashes.push({x, y, age: 0, color: color || 'rgba(255, 255, 200, ALPHA)'}); }
+            function addPluckFlash(x, y, color) { pluckFlashes.push({x, y, age: 0, color: color || '255, 255, 200'}); }
             function updateFlashes(dt) {
                 for (let f of pluckFlashes) f.age += dt;
                 pluckFlashes = pluckFlashes.filter(f => f.age < FLASH_DURATION);
@@ -672,7 +677,7 @@
                     const p = f.age / FLASH_DURATION, a = 1 - p;
                     ctx.beginPath();
                     ctx.arc(f.x, f.y, 5 + p*20, 0, Math.PI*2);
-                    ctx.strokeStyle = f.color.replace('ALPHA', a);
+                    ctx.strokeStyle = 'rgba(' + f.color + ',' + a + ')';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 }
