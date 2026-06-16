@@ -582,11 +582,7 @@
             const bodyCooldowns = new Array(SEGMENTS).fill(0);
             const COOLDOWN_MS = 100, SPEED_THRESHOLD = 2;
             const pentatonic = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00,1046.50,1174.66,1318.51,1567.98,1760.00];
-            const octaveColors = [
-                '215, 35, 46',   // Low Octave: Deep Brand Red (C4-A4)
-                '255, 127, 80',  // Medium Octave: Warm Coral Orange (C5-A5)
-                '255, 215, 0'    // High Octave: Bright Golden Yellow (C6-A6)
-            ];
+
 
             let isMuted = false;
             let speakerVisible = false;
@@ -630,10 +626,13 @@
 
                 const noteIndex = Math.round(((i - 1) / (SEGMENTS - 3)) * (pentatonic.length - 1));
 
-                // Add visual flash mapped to octave color (warm & bright palette)
+                // Add visual flash mapped to octave hue (warm & bright scale)
                 if (stringBodies[i]) {
                     const octave = Math.floor(noteIndex / 5);
-                    const color = octaveColors[Math.min(octave, octaveColors.length - 1)];
+                    const hue = (356 + octave * 32) % 360;
+                    const sat = 70 + octave * 15;   // 70%, 85%, 100%
+                    const light = 49 + octave * 3;  // 49%, 52%, 55%
+                    const color = `hsla(${hue}, ${sat}%, ${light}%`;
                     addPluckFlash(stringBodies[i].position.x, stringBodies[i].position.y, color);
                 }
 
@@ -667,7 +666,7 @@
             // --- Pluck flashes ---
             let pluckFlashes = [];
             const FLASH_DURATION = 300;
-            function addPluckFlash(x, y, color) { pluckFlashes.push({x, y, age: 0, color: color || '255, 255, 200'}); }
+            function addPluckFlash(x, y, color) { pluckFlashes.push({x, y, age: 0, color: color || 'rgba(255, 255, 200'}); }
             function updateFlashes(dt) {
                 for (let f of pluckFlashes) f.age += dt;
                 pluckFlashes = pluckFlashes.filter(f => f.age < FLASH_DURATION);
@@ -677,7 +676,7 @@
                     const p = f.age / FLASH_DURATION, a = 1 - p;
                     ctx.beginPath();
                     ctx.arc(f.x, f.y, 5 + p*20, 0, Math.PI*2);
-                    ctx.strokeStyle = 'rgba(' + f.color + ',' + a + ')';
+                    ctx.strokeStyle = f.color + ',' + a + ')';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 }
