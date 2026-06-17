@@ -778,6 +778,7 @@
             }
 
             const BRUSH_R = 16;
+            const PAD = 8;
 
             function brush(x, y) {
                 if (!ready) return;
@@ -785,8 +786,11 @@
                 if (pc.width === 0) return;
                 if (paintBounds.w <= 0 || paintBounds.h <= 0) updatePaintBounds();
 
-                // 1. Prepare the temporary canvas for composing this single stroke
-                const size = Math.round(2 * BRUSH_R * pscale);
+                // 1. Prepare the temporary canvas with padding in physical pixels
+                const rScaled = BRUSH_R * pscale;
+                const padScaled = PAD * pscale;
+                const size = Math.round(2 * (BRUSH_R + PAD) * pscale);
+
                 if (tempCanvas.width !== size || tempCanvas.height !== size) {
                     tempCanvas.width = size;
                     tempCanvas.height = size;
@@ -794,14 +798,16 @@
                     tempCtx.clearRect(0, 0, size, size);
                 }
 
-                // 2. Render the feathered brush stroke, clip the painting image, and apply tint
+                // 2. Render the feathered brush stroke directly in physical pixels
                 tempCtx.save();
-                tempCtx.scale(pscale, pscale);
 
                 const angle = Math.random() * Math.PI * 2;
-                const wobX = BRUSH_R + Math.cos(angle) * 2;
-                const wobY = BRUSH_R + Math.sin(angle) * 2;
-                const grad = tempCtx.createRadialGradient(wobX, wobY, 1, BRUSH_R, BRUSH_R, BRUSH_R);
+                const centerX = rScaled + padScaled;
+                const centerY = rScaled + padScaled;
+                const wobX = centerX + Math.cos(angle) * 2 * pscale;
+                const wobY = centerY + Math.sin(angle) * 2 * pscale;
+                
+                const grad = tempCtx.createRadialGradient(wobX, wobY, 1 * pscale, centerX, centerY, rScaled);
                 grad.addColorStop(0, 'rgba(0,0,0,1)');
                 grad.addColorStop(0.35, 'rgba(0,0,0,0.85)');
                 grad.addColorStop(0.7, 'rgba(0,0,0,0.3)');
@@ -809,24 +815,30 @@
                 
                 tempCtx.fillStyle = grad;
                 tempCtx.beginPath();
-                tempCtx.arc(BRUSH_R, BRUSH_R, BRUSH_R, 0, Math.PI * 2);
+                tempCtx.arc(centerX, centerY, rScaled, 0, Math.PI * 2);
                 tempCtx.fill();
 
                 // Mask: only keep painting where the brush stroke is opaque
                 tempCtx.globalCompositeOperation = 'source-in';
-                tempCtx.drawImage(pimg, paintBounds.x - x + BRUSH_R, paintBounds.y - y + BRUSH_R, paintBounds.w, paintBounds.h);
+                
+                // Draw the painting image aligned with this brush stroke in physical pixels
+                const dx = (paintBounds.x - x) * pscale + centerX;
+                const dy = (paintBounds.y - y) * pscale + centerY;
+                const dw = paintBounds.w * pscale;
+                const dh = paintBounds.h * pscale;
+                tempCtx.drawImage(pimg, dx, dy, dw, dh);
 
                 // Tint: overlay accent color with opacity
                 tempCtx.globalCompositeOperation = 'source-atop';
                 tempCtx.globalAlpha = 0.35;
                 tempCtx.fillStyle = accent;
-                tempCtx.fillRect(0, 0, 2 * BRUSH_R, 2 * BRUSH_R);
+                tempCtx.fillRect(0, 0, size, size);
 
                 tempCtx.restore();
 
                 // 3. Draw the locally composed brush stroke directly to the main canvas
                 const ctx = pc.getContext('2d');
-                ctx.drawImage(tempCanvas, Math.round((x - BRUSH_R) * pscale), Math.round((y - BRUSH_R) * pscale));
+                ctx.drawImage(tempCanvas, Math.round((x - BRUSH_R - PAD) * pscale), Math.round((y - BRUSH_R - PAD) * pscale));
             }
 
             pc.addEventListener('mousemove', function(e) {
